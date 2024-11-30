@@ -119,8 +119,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', async function() {
-        const red = await fetch("https://n5an9hzb73.execute-api.us-east-1.amazonaws.com/post",
-            { mode: 'no-cors'})
+        const red = await fetch("https://n5an9hzb73.execute-api.us-east-1.amazonaws.com/post")
         const data = await red.json()
         console.log(data)
     });
