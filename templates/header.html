@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
+</head>
+<body class="p-8 bg-gray-100">
+<div class="mb-4">
+  <button id="addItem" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+    Add Item
+  </button>
+  <button id="toggleLayout" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 ml-2">
+    Toggle Layout
+  </button>
+</div>
+
+<div id="grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="bg-white p-4 rounded shadow">Item 1</div>
+  <div class="bg-white p-4 rounded shadow">Item 2</div>
+  <div class="bg-white p-4 rounded shadow">Item 3</div>
+</div>
+
+<script>
+  // Get references to DOM elements
+  const grid = document.getElementById('grid');
+  const addButton = document.getElementById('addItem');
+  const toggleButton = document.getElementById('toggleLayout');
+  let itemCount = 3;
+  let isWide = true;
+
+  // Add new item to grid
+  addButton.addEventListener('click', () => {
+    itemCount++;
+    const newItem = document.createElement('div');
+    newItem.className = 'bg-white p-4 rounded shadow';
+    newItem.textContent = `Item ${itemCount}`;
+
+    // Add fade-in animation
+    newItem.style.opacity = '0';
+    grid.appendChild(newItem);
+    setTimeout(() => {
+      newItem.style.transition = 'opacity 0.3s ease-in';
+      newItem.style.opacity = '1';
+    }, 50);
+  });
+
+  // Toggle between different layouts
+  toggleButton.addEventListener('click', () => {
+    if (isWide) {
+      grid.className = 'grid grid-cols-1 gap-4';
+    } else {
+      grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
+    }
+    isWide = !isWide;
+  });
+</script>
+</body>
+</html>

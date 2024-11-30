@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Interface</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'post-blue': '#DEEBFF',
+                        'post-yellow': '#FFF6DF'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100">
+
+    <main class="container mx-auto p-4 max-w-9xl">
+        <!-- Mobile Menu Toggle -->
+        <div class="fixed top-4 right-4 z-50 lg:hidden flex gap-4">
+            <button id="leftSidebarToggle" class="bg-black text-white p-2 rounded-full">
+                <i data-feather="menu"></i>
+            </button>
+            <button id="rightSidebarToggle" class="bg-black text-white p-2 rounded-full">
+                <i data-feather="more-vertical"></i>
+            </button>
+        </div>
+
+        <div class="grid lg:grid-cols-5 gap-4">
+            <!-- Left Navigation Panel -->
+            <aside class="fixed inset-0 lg:relative lg:block  transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out z-40 w-64 lg:w-auto"
+                   id="leftSidebar">
+                <div class="p-4 rounded  h-full">
+                    <!-- Close button for mobile -->
+                    <button class="lg:hidden absolute top-4 right-4 text-gray-500" id="leftSidebarClose">
+                        <i data-feather="x"></i>
+                    </button>
+
+                    <!-- User Profile -->
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
+                            <img src="https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg" alt="Profile"
+                                 class="w-full h-full object-cover">
+                        </div>
+                        <h3 class="font-semibold">Bogdan Nikitin</h3>
+                    </div>
+                    <!-- Navigation Menu -->
+                    <nav class="space-y-1" id="nav-menu"></nav>
+                </div>
+            </aside>
+
+            <!-- Feed Section -->
+            <section class="relative lg:col-span-3 p-4 rounded  space-y-4 relative min-h-screen" id="post-feed">
+                <!-- Posts will be added here -->
+                <div class="pb-20">
+                    <!-- Posts content -->
+                </div>
+
+                <!-- Post Creation - Fixed at bottom -->
+                <div class="fixed bottom-5 left-0 right-0 bg-[#f3f1f1]">
+                    <form class="flex items-center gap-3 max-w-3xl mx-auto">
+                        <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                            <img src="https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg"
+                                 alt="User"
+                                 class="w-full h-full object-cover">
+                        </div>
+                        <input type="text"
+                               placeholder="Share something..."
+                               class="w-full  rounded-full px-4 py-2"
+                               id="post-input">
+                        <button type="button"
+                                class="px-4 py-2 bg-black text-white rounded-full text-sm flex-shrink-0"
+                                id="post-button">
+                            Send
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Right Sidebar -->
+            <aside class="fixed inset-y-0 right-0 lg:relative lg:block  transform translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out z-40 w-80 lg:w-auto" id="rightSidebar">
+                <div class="p-4 rounded  h-full overflow-y-auto">
+                    <!-- Close button for mobile -->
+                    <button class="lg:hidden absolute top-4 right-4 text-gray-500" id="rightSidebarClose">
+                        <i data-feather="x"></i>
+                    </button>
+
+                    <!-- Stories -->
+                    <section>
+                        <h3 class="font-bold text-xl mb-4 mt-8 lg:mt-0">Stories</h3>
+                        <div class="grid grid-cols-2 gap-3" id="stories-container"></div>
+                    </section>
+
+                    <!-- Suggestions -->
+                    <section class="mt-6">
+                        <h3 class="font-bold text-xl mb-4">Suggestions</h3>
+                        <div class="space-y-4" id="suggestions-container"></div>
+                    </section>
+
+                    <!-- Recommendations -->
+                    <section class="mt-6">
+                        <h3 class="font-bold text-xl mb-4">Recommendations</h3>
+                        <div class="grid grid-cols-2 gap-3" id="recommendations-container"></div>
+                    </section>
+                </div>
+            </aside>
+
+        </div>
+    </main>
+
+    <!-- Overlay for mobile -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden" id="overlay"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        const red = await fetch("https://n5an9hzb73.execute-api.us-east-1.amazonaws.com/post")
+        const data = await red.json()
+        console.log(data)
+    });
+
+
+    // Mobile sidebar functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const leftSidebar = document.getElementById('leftSidebar');
+        const rightSidebar = document.getElementById('rightSidebar');
+        const leftSidebarToggle = document.getElementById('leftSidebarToggle');
+        const rightSidebarToggle = document.getElementById('rightSidebarToggle');
+        const leftSidebarClose = document.getElementById('leftSidebarClose');
+        const rightSidebarClose = document.getElementById('rightSidebarClose');
+        const overlay = document.getElementById('overlay');
+
+        function toggleOverlay(show) {
+            if (show) {
+                overlay.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            } else {
+                overlay.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        function closeLeftSidebar() {
+            leftSidebar.classList.add('-translate-x-full');
+            toggleOverlay(false);
+        }
+
+        function closeRightSidebar() {
+            rightSidebar.classList.add('translate-x-full');
+            toggleOverlay(false);
+        }
+
+        leftSidebarToggle.addEventListener('click', () => {
+            closeRightSidebar(); // Close right sidebar if open
+            leftSidebar.classList.remove('-translate-x-full');
+            toggleOverlay(true);
+        });
+
+        rightSidebarToggle.addEventListener('click', () => {
+            closeLeftSidebar(); // Close left sidebar if open
+            rightSidebar.classList.remove('translate-x-full');
+            toggleOverlay(true);
+        });
+
+        leftSidebarClose.addEventListener('click', closeLeftSidebar);
+        rightSidebarClose.addEventListener('click', closeRightSidebar);
+
+        overlay.addEventListener('click', () => {
+            closeLeftSidebar();
+            closeRightSidebar();
+        });
+
+        // Close sidebars on window resize if switching to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                closeLeftSidebar();
+                closeRightSidebar();
+            }
+        });
+    });
+
+    const navItems = [
+        {icon: 'home', label: 'News Feed', active: true},
+        {icon: 'mail', label: 'Messages', badge: 6},
+        {icon: 'message-square', label: 'Forums'},
+        {icon: 'users', label: 'Friends', badge: 3},
+        {icon: 'film', label: 'Media'},
+        {icon: 'settings', label: 'Settings'}
+    ];
+
+    const storiesData = [
+        {
+            image: "https://images.pexels.com/photos/2014422/pexels-photo-2014422.jpeg",
+            userImage: "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg",
+            userName: "Anatoly Pr."
+        },
+        {
+            image: "https://images.pexels.com/photos/1261728/pexels-photo-1261728.jpeg",
+            userImage: "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg",
+            userName: "Lolita Earns"
+        }
+    ];
+
+    const suggestionsData = [
+        {
+            image: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg",
+            name: "Nick Shelburne"
+        },
+        {
+            image: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg",
+            name: "Brittni Lando"
+        },
+        {
+            image: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg",
+            name: "Ivan Shevchenko"
+        }
+    ];
+
+    const recommendationsData = [
+        {icon: "x", label: "UI/UX", bgColor: "bg-blue-50"},
+        {icon: "music", label: "Music", bgColor: "bg-pink-200"},
+        {icon: "coffee", label: "Cooking", bgColor: ""},
+        {icon: "mountain", label: "Hiking", bgColor: "bg-purple-300"}
+    ];
+
+    const samplePosts = [
+        {
+            index: 0,
+            avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg',
+            author: 'George Lobko',
+            time: '2 hours ago',
+            content: 'Hi everyone, today I was on the most beautiful mountain in the world 😍, I also want to say hi to Silena, Olya and Davis!',
+            images: [
+                'https://images.pexels.com/photos/1287145/pexels-photo-1287145.jpeg',
+                'https://images.pexels.com/photos/3617500/pexels-photo-3617500.jpeg',
+                'https://images.pexels.com/photos/1574843/pexels-photo-1574843.jpeg'
+            ],
+            views: 6355
+        },
+        {
+            index: 1,
+            avatar: 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg',
+            author: 'Vitaliy Boyko',
+            time: '3 hours ago',
+            content: 'I chose a wonderful coffee today, I wanted to tell you what product they have in stock - it\'s a latte with coconut milk... delicious... it\'s really incredibly tasty!!! ☕️',
+            views: 4211
+        }
+    ];
+
+    // Creation functions
+    function createNavItems(items) {
+        return items.map(item => `
+                <button class="w-full flex items-center gap-3 px-4 py-3 rounded-lg ${item.active ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-50'}" data-nav="${item.label.toLowerCase().replace(' ', '-')}">
+                    <i data-feather="${item.icon}"></i>
+                    <span>${item.label}</span>
+                    ${item.badge ? `<span class="ml-auto bg-gray-100 text-xs px-2 py-1 rounded-full">${item.badge}</span>` : ''}
+                </button>
+            `).join('');
+    }
+
+    function createStories(stories) {
+        return stories.map(story => `
+                <div class="relative rounded-2xl overflow-hidden">
+                    <img src="${story.image}" alt="Story" class="w-full h-32 object-cover">
+                    <div class="absolute bottom-2 left-2 flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-full overflow-hidden">
+                            <img src="${story.userImage}" alt="${story.userName}" class="w-full h-full object-cover">
+                        </div>
+                        <span class="text-white text-sm">${story.userName}</span>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    function createSuggestions(suggestions) {
+        return suggestions.map(suggestion => `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <img src="${suggestion.image}" alt="${suggestion.name}" class="w-10 h-10 rounded-full object-cover">
+                        <span class="font-medium">${suggestion.name}</span>
+                    </div>
+                    <button class="px-4 py-1.5 bg-black text-white rounded-full text-sm">Follow</button>
+                </div>
+            `).join('') + '<button class="text-sm text-gray-500 hover:text-gray-700 mt-4 block">See all</button>';
+    }
+
+    function createRecommendations(recommendations) {
+        return recommendations.map(rec => `
+                <div class="aspect-square rounded-2xl ${rec.bgColor} flex flex-col items-center justify-center">
+                    <i data-feather="${rec.icon}" class="mb-2"></i>
+                    <span class="text-sm">${rec.label}</span>
+                </div>
+            `).join('');
+    }
+
+    function createPost(data) {
+        return `
+                <div class="bg-${data.index % 2 === 0 ? 'post-blue' : 'post-yellow'} rounded-xl p-6">
+                    <div class="flex items-start gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                            <img src="${data.avatar}" alt="User" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">${data.author}</h4>
+                            <p class="text-sm text-gray-500">${data.time}</p>
+                        </div>
+                        <button class="ml-auto text-gray-400 hover:text-gray-600">•••</button>
+                    </div>
+
+                    <p class="mb-4">${data.content}</p>
+
+                    ${data.images ? `
+                        <div class="grid grid-cols-3 gap-2 mb-4">
+                            ${data.images.map(img => `
+                                <img src="${img}" alt="Post image" class="w-full h-48 object-cover rounded-lg">
+                            `).join('')}
+                        </div>
+                    ` : ''}
+
+                    <div class="flex items-center gap-6 pt-4 ">
+                        <button class="flex items-center gap-2 text-gray-500">
+                            <span>👁️</span>
+                            <span>${data.views}</span>
+                        </button>
+                        <button class="flex items-center gap-2 text-gray-500">
+                            <span>❤️</span>
+                            <span>Like</span>
+                        </button>
+                        <button class="flex items-center gap-2 text-gray-500">
+                            <span>💬</span>
+                            <span>Comment</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+    }
+
+    // Initialize content
+    document.getElementById('nav-menu').innerHTML = createNavItems(navItems);
+    document.getElementById('stories-container').innerHTML = createStories(storiesData);
+    document.getElementById('suggestions-container').innerHTML = createSuggestions(suggestionsData);
+    document.getElementById('recommendations-container').innerHTML = createRecommendations(recommendationsData);
+
+    // Initialize Feather icons
+    feather.replace();
+
+    // Navigation active state management
+    const navMenu = document.getElementById('nav-menu');
+    const navButtons = navMenu.querySelectorAll('button');
+
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            navButtons.forEach(btn => {
+                btn.classList.remove('bg-black', 'text-white');
+                btn.classList.add('text-gray-700', 'hover:bg-gray-50');
+            });
+            button.classList.remove('text-gray-700', 'hover:bg-gray-50');
+            button.classList.add('bg-black', 'text-white');
+            feather.replace();
+        });
+    });
+
+    // Create post functionality
+    const postInput = document.getElementById('post-input');
+    const postButton = document.getElementById('post-button');
+    const postFeed = document.getElementById('post-feed');
+
+    let postCount = 0;
+    postButton.addEventListener('click', () => {
+        const content = postInput.value.trim();
+        if (content) {
+            const newPostData = {
+                index: postCount,
+                avatar: 'https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg',
+                author: 'You',
+                time: 'Just now',
+                content: content,
+                views: 0
+            };
+
+            postFeed.insertAdjacentHTML('afterbegin', createPost(newPostData));
+            postInput.value = '';
+            postCount++;
+        }
+    });
+
+    // Add sample posts to feed
+    samplePosts.forEach(post => {
+        postFeed.insertAdjacentHTML('beforeend', createPost(post));
+    });
+
+</script>
+</body>
+</html>
